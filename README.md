@@ -1,5 +1,6 @@
 # python_LDA
 主题文档分析算法
+ALda.py file is my code 
 references:
 http://sklearn.apachecn.org/#/docs/76
 http://blog.echen.me/2011/08/22/introduction-to-latent-dirichlet-allocation/
