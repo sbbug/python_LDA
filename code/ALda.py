@@ -1,14 +1,18 @@
 import numpy as np
 import random
 vars = {}
-vars['K'] = 2
+vars['K'] = 5
+# vars['K'] = 10
+# vars['K'] = 20
 vars['alpha'] = 1
 vars['eta'] = 0.001
-vars['iterations'] = 100
+vars['iterations'] = 10
 
 #读取文档到列表
+#文档集合是预先处理好的数据
 def getDocsList():
-    file = "../data/test2.txt"
+    # file = "../data/test2.txt"
+    file = "../data/process.txt"
     f = open(file,"r+",encoding="utf-8")
     line = f.readline()
     docs = []
@@ -20,6 +24,8 @@ def getDocsList():
 
     return docs
 #从文档集合中获取字典列表
+#字典是预先处理好的数据，当然也可以从文档集合中重新获取一次
+#从文档中重新获取字典
 def getVocab(docs):
     vocab = []
     n=0
@@ -29,12 +35,30 @@ def getVocab(docs):
              print("==="+str(n))
              if w not in vocab:
                  vocab.append(w)
+    print("vocab=========")
+    print(vocab)
     return vocab
+#直接从文件里读取字典
+def getVocabFromFile():
+    vocab = []
+    f = open("../data/dict.txt","r+",encoding="utf-8")
+    line = f.readline()
+
+    while line and line!='\n':
+        line = line.split("\n")
+        if line[0] not in vocab:
+            vocab.append(line[0])
+
+        line = f.readline()
+
+    return vocab
+
 #将文档集合中的单子向量化，就是编码
 def getDocWordId(docs,vocab):
     docs_word_id = []
     for d in docs:
         doc_id = []
+        #print(d)
         for w in d:
             id = vocab.index(w)
             doc_id.append(id)
@@ -132,7 +156,7 @@ def dot(a_list,b_list):
     res = []
     for i in range(len(a_list)):
         t = a_list[i]*b_list[i]
-        t = round(t,5)
+        t = round(t,10)
         res.append(t)
 
     return res
@@ -146,7 +170,7 @@ def addAlp(dt,alpha):
 def matDivVec(mat,vec):
     for i in range(len(mat)):
         for j in range(len(mat[i])):
-            mat[i][j] = round(mat[i][j]/vec[i],4)
+            mat[i][j] = round(mat[i][j]/vec[i],10)
 
     return mat
 #LDA算法
@@ -172,11 +196,11 @@ def Lda(vocab,docs_word_id,ta,dt,wt):
                 #获取当前文档下的当前单词位于每个主题下的词频分布
                 p_z = dot(div(cal(wt,wid,vars['eta']),denom_b),div(rowAddb(dt[d],vars['alpha']),denom_a))
                 p_z = div(p_z,sum(p_z))
-
                 p = np.array(p_z)
                 np.random.seed(0)
                 #根据当前的单词位于主题的概率分布，随机选取一个新的主题
-                t1 = np.random.choice([0,1],p = p.ravel())
+                #print(p)
+                t1 = np.random.choice(range(0,vars['K']),p = p.ravel())
 
                 #重新更细矩阵
                 ta[d][w] = t1
@@ -189,12 +213,12 @@ def Lda(vocab,docs_word_id,ta,dt,wt):
     a = addAlp(dt,vars['alpha'])
     b = rowSum(a)
     theta = matDivVec(a,b)
-    print(theta)
+    # print(theta)
 
     a = addAlp(wt, vars['eta'])
     b = rowSum(a)
     phi = matDivVec(a, b)
-    print(phi)
+    # print(phi)
 
     return theta,phi
 
@@ -213,7 +237,8 @@ if __name__ == '__main__':
     docs = getDocsList()
 
     print("获取词汇列表")
-    vocab = getVocab(docs)
+    #vocab = getVocab(docs)
+    vocab = getVocabFromFile()
 
     print("获取文档单词的index")
     docs_word_id = getDocWordId(docs,vocab)
@@ -228,6 +253,9 @@ if __name__ == '__main__':
     theta,phi = Lda(vocab, docs_word_id, ta, dt, wt)
 
     print("保存训练好的结果")
-    saveData(theta,"../data/theta.txt")
-    saveData(phi,"../data/phi.txt")
-
+    saveData(theta,"../data/theta_1.txt")
+    saveData(phi,"../data/phi_1.txt")
+    print("theta--------")
+    print(theta)
+    print("phi---------")
+    print(phi)

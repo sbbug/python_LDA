@@ -2,8 +2,6 @@ import re
 '''
 判断字符串是否含有数字
 '''
-pun = '[,.—!\']'
-
 def check_contain_digit(check_str):
     for ch in check_str:
         if ch.isdigit():
@@ -24,38 +22,51 @@ def readStop():
         line = f.readline()
     f.close()
 
+    stopWords.append(" ") #将空格加入停用词
+
     return stopWords
+#判断是否为敏感字符
+def isWrongChar(word):
+    ws = ['[',']','“','”','？',';',':','(',')',' ','']
+    for w in ws:
+        if w==word:
+            return True
+
+    return False
 
 def processData():
     '''
     :return:
     '''
+    pun = '[,.—!\']'
     f = open("../data/news.txt",encoding = 'utf-8')
-
     stopWords = readStop()
     line = f.readline()
     resWords = []
     N = 0
     while line:
         N = N+1
+        #测试使用
+        if N==100:
+            break;
         print("--"+str(N))
         line = line.replace("\n","") #去掉换行符
-        line = re.sub(pun,'',line) #去掉敏感字符
+        line = re.sub(pun,'',line) #去掉敏句子中的感字符
         lineWords = line.split(" ")
-        #删除列表中的空值
-        while '' in lineWords:
-            lineWords.remove('')
-
+        # print(lineWords)
         #去除这一行的停用词
         bug = []
         for i in range(len(lineWords)):
 
             lineWords[i] = lineWords[i].lower()
+            #去掉单词中的字符
             lineWords[i] = re.sub("[“”?;:()]", "", lineWords[i])
 
             if lineWords[i] in stopWords:
                 bug.append(lineWords[i])
             if check_contain_digit(lineWords[i]):
+                bug.append(lineWords[i])
+            if isWrongChar(lineWords[i]):
                 bug.append(lineWords[i])
 
         for b in bug:
@@ -63,6 +74,7 @@ def processData():
 
         #将去除后的停用词写到文件里
         words = " ".join(str(word) for word in lineWords)
+        # print(words.split(" "))
         resWords.append(words)
         line = f.readline()
         print("--")
@@ -94,7 +106,7 @@ def getDict():
 
     p = open("../data/dict.txt","w+", encoding='utf-8')
     words = "\n".join(str(d) for d in dict)
-    print(words)
+    # print(words)
     p.write(words)
     p.close()
 
