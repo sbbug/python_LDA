@@ -8,11 +8,12 @@ vars['iterations'] = 100
 
 #读取文档到列表
 def getDocsList():
-    file = "../data/process.txt"
+    file = "../data/test2.txt"
     f = open(file,"r+",encoding="utf-8")
     line = f.readline()
     docs = []
-    while line:
+    while line and line!='\n':
+        # print("==="+line)
         line = line.replace("\n","")
         docs.append(line.split(" "))
         line = f.readline()
@@ -195,6 +196,16 @@ def Lda(vocab,docs_word_id,ta,dt,wt):
     phi = matDivVec(a, b)
     print(phi)
 
+    return theta,phi
+
+#将训练好的模型数据保存到文件里
+def saveData(mat,file):
+
+    f = open(file,"w+",encoding="utf-8")
+    for m in mat:
+        f.write(str(m)+"\n")
+
+    f.close()
 
 if __name__ == '__main__':
 
@@ -214,5 +225,9 @@ if __name__ == '__main__':
     dt = getDt(docs,ta)
 
     print("开始训练模型")
-    Lda(vocab, docs_word_id, ta, dt, wt)
+    theta,phi = Lda(vocab, docs_word_id, ta, dt, wt)
+
+    print("保存训练好的结果")
+    saveData(theta,"../data/theta.txt")
+    saveData(phi,"../data/phi.txt")
 
